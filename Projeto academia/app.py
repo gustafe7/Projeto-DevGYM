@@ -4,6 +4,10 @@ from flask_mail import Mail, Message
 from itsdangerous import URLSafeTimedSerializer
 from datetime import datetime
 import re
+import os
+from dotenv import load_dotenv
+
+load_dotenv()
 
 app = Flask(__name__)
 app.secret_key = 'sua_chave_secreta_aqui'
@@ -14,8 +18,8 @@ serializer = URLSafeTimedSerializer(app.secret_key)
 app.config['MAIL_SERVER'] = 'smtp.gmail.com'
 app.config['MAIL_PORT'] = 587   
 app.config['MAIL_USE_TLS'] = True
-app.config['MAIL_USERNAME'] = 'devgym021@gmail.com'
-app.config['MAIL_PASSWORD'] = 'roxadvwsueycgvxs'
+app.config['MAIL_USERNAME'] = os.getenv('MAIL_USERNAME')
+app.config['MAIL_PASSWORD'] = os.getenv('MAIL_PASSWORD')
 mail = Mail(app)
 
 def email_valido(email):
