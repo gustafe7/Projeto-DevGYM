@@ -1,0 +1,63 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<h2> Treino: {{ treino.nome }}</h2>
+Dia: {{ treino.dia_semana }}
+
+<h4>Adicionar Exercício</h4>
+<form action="{{ url_for('treinos_detalhes', treino_id=treino.id) }}" method="post">
+    <input type="text" name="nome_exercicio" placeholder="Nome do exercício" required>
+    <button type="submit">Adicionar</button>
+</form>
+
+<h2>Exercícios</h2>
+
+{% for exercicio in exercicios %} 
+<div style="display: flex; align-items: center; gap: 8px; margin-bottom: 5px;"> 
+
+    <span>{{ exercicio.nome }}</span>
+
+    {% if exercicio.concluido %} 
+        ✔ 
+    {% else %} 
+        ❌ 
+    {% endif %} 
+
+    <form action="/exercicio/{{ exercicio.id }}/concluir" method="post" style="display:inline;"> 
+        {% if exercicio.concluido %}
+            <button type="submit">Desmarcar</button> 
+        {% else %}
+            <button type="submit">Concluir</button>
+        {% endif %}
+    </form> 
+
+    <form action="/exercicio/{{ exercicio.id }}/delete" method="post" style="display:inline;">
+        <button type="submit">Excluir</button>
+    </form>
+
+</div> 
+{% endfor %}
+
+<br>
+
+<h3>Progresso do treino</h3>
+<div class="progress" style="height: 18px; background-color: #ddd;">
+  <div class="progress-bar"
+       style="width: {{ progresso }}%; height: 100%; background-color: #4CAF50; color: white; text-align: center; font-weight: bold;">
+    {{ progresso }}%
+  </div>
+</div>
+
+{% if progresso == 100 %}
+<p style="color: black; font-weight: bold; margin-top: 10px;">
+  Parabéns! O seu treino foi finalizado! 🎉
+</p>
+{% endif %}
+
+<br><br>
+<a href="/" style="text-decoration:none;">
+    <button>Voltar</button>
+</a>
+
+{% endblock %}

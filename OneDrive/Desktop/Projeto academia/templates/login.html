@@ -1,0 +1,30 @@
+<h1>DEVGYM</h1>
+Entre com o seu Login:
+
+<form action="/login" method="post">
+    <input type="text" name="nome" placeholder="Login">
+    <input type="password" name="senha" placeholder="Senha">
+    <button type="submit">Entrar</button>
+</form>
+
+Cadastre-se:
+
+<form action="/cadastro" method="post">
+    <input type="text" name="nome" placeholder="Login" required>
+    <input type="email" name="email" placeholder="E-mail" required>
+    <input type="password" name="senha" placeholder="Senha" required>
+    <input type="password" name="senha_confirm" placeholder="Confirme a senha" required>
+    <button type="submit">Registrar</button>
+    <p><a href="/recuperar-senha">Esqueceu a senha?</a></p>
+</form>
+
+{% if erro %}
+    <p style="color:red;">{{ erro }}</p>
+{% endif %}
+
+{% if sucesso %}
+    <p style="color:green;">Cadastro realizado com sucesso!</p>
+    <form action="/login">
+        <button type="submit">Ir para login</button>
+    </form>
+{% endif %}

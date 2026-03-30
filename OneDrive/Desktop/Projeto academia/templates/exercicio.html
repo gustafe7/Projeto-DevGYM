@@ -1,0 +1,18 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<h3>Adicionar Exercício ao Treino {{ treino.nome }}</h3>
+
+<form action="/treino/{{ treino_id }}/exercicio" method="post">
+    <input type="text" name="nome_exercicio" placeholder="Nome do exercício" required>
+    <button type="submit">Adicionar Exercício</button>
+</form>
+
+<br>
+
+<a href="{{ url_for('treinos_detalhes', treino_id=treino.id) }}">
+    <button>Voltar</button>
+</a>
+
+{% endblock %}

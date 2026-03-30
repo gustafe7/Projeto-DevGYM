@@ -1,0 +1,19 @@
+<h2>Redefinir Senha</h2>
+
+{% if erro %}
+    <p style="color:red;">{{ erro }}</p>
+{% endif %}
+
+{% if sucesso %}
+    <p style="color:green;">Senha alterada com sucesso! Agora você pode <a href="/login">fazer login</a>.</p>
+{% else %}
+    <form method="POST">
+        <label for="senha">Nova senha:</label>
+        <input type="password" name="senha" required><br><br>
+
+        <label for="senha_confirm">Confirme a senha:</label>
+        <input type="password" name="senha_confirm" required><br><br>
+
+        <button type="submit">Redefinir senha</button>
+    </form>
+{% endif %}

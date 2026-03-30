@@ -1,0 +1,44 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<h2>Perfil do Usuário</h2>
+
+<div style="border: 1px solid #ccc; padding: 20px; width: 400px;">
+    <p><strong>Nome:</strong> {{ usuario.nome }}</p>
+    <p><strong>Email:</strong> {{ usuario.email }}</p>
+    <p><strong>Confirmado:</strong> {{ 'Sim' if usuario.confirmado else 'Não' }}</p>
+</div>
+
+<h3>Histórico de Treinos</h3>
+
+<form method="get">
+    Nome: <input type="text" name="nome" value="{{ request.args.get('nome','') }}">
+    Mês:
+    <select name="mes">
+        <option value="">Todos</option>
+        {% for i in range(1,13) %}
+        <option value="{{ i }}" {% if request.args.get('mes') == i|string %}selected{% endif %}>{{ i }}</option>
+        {% endfor %}
+    </select>
+    <button type="submit">Filtrar</button>
+</form>
+
+<ul>
+    {% for treino in treinos_inativos %}
+        <li>
+            {{ treino.nome }} - {{ treino.dia_semana }} - {{ treino.data_criacao.strftime('%d/%m/%Y') }}
+
+            <form action="/treino/{{ treino.id }}/delete-permanente" method="post" style="display:inline;">
+                <button type="submit" style="background-color:red; color:white;">
+                    Excluir definitivamente
+                </button>
+            </form>
+        </li>
+    {% endfor %}
+</ul>
+
+<br><br>
+<a href="/" style="text-decoration:none;">
+    <button>Voltar</button>
+</a>
+{% endblock %}
