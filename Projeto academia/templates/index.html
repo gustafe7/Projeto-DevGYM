@@ -20,8 +20,12 @@
         {{ treino.dia_semana }} - {{ treino.nome }}
     </a>
 
+    <a href="/treino/{{ treino.id }}/editar">
+    <button>Editar</button>
+    </a>
+
     <form action="/treino/{{ treino.id }}/delete" method="post">
-    <button type="submit">Finalizar treino</button>
+    <button type="submit">Excluir treino</button>
 </form>
 
 </div>

@@ -2,8 +2,8 @@
 Entre com o seu Login:
 
 <form action="/login" method="post">
-    <input type="text" name="nome" placeholder="Login">
-    <input type="password" name="senha" placeholder="Senha">
+    <input type="email" name="email" placeholder="E-mail" autocomplete="username">
+    <input type="password" name="senha" placeholder="Senha" autocomplete="current-password">
     <button type="submit">Entrar</button>
 </form>
 
@@ -24,7 +24,5 @@ Cadastre-se:
 
 {% if sucesso %}
     <p style="color:green;">Cadastro realizado com sucesso!</p>
-    <form action="/login">
-        <button type="submit">Ir para login</button>
-    </form>
+    <p style="color: black">Você receberá um link para confirmar o seu email.</p>
 {% endif %}

@@ -6,6 +6,7 @@ from datetime import datetime
 import re
 import os
 from dotenv import load_dotenv
+from werkzeug.security import generate_password_hash, check_password_hash
 
 load_dotenv()
 
@@ -25,6 +26,15 @@ mail = Mail(app)
 def email_valido(email):
     padrao = r'^[\w\.-]+@[\w\.-]+\.\w+$'
     return re.match(padrao, email)
+
+def senha_forte(senha):
+    if len(senha) < 8:
+        return False
+    if not any(c.isupper() for c in senha):
+        return False
+    if not any(c.isdigit() for c in senha):
+        return False
+    return True
 
 def gerar_token(usuario_email):
     return serializer.dumps(usuario_email, salt='recuperar-senha')
@@ -77,8 +87,11 @@ def cadastro():
             erro = "E-mail já cadastrado!"
         elif senha != senha_confirm:
             erro = "As senhas não coincidem!"
+        elif not senha_forte(senha):
+            erro = "A senha deve ter pelo menos 8 caracteres, incluir uma letra maiúscula e um número!"
         else:
-            novo_usuario = Usuario(nome=nome, senha=senha, email=email, confirmado=False) 
+            senha_hash = generate_password_hash(senha)
+            novo_usuario = Usuario(nome=nome, senha=senha_hash, email=email, confirmado=False) 
             db.session.add(novo_usuario)
             db.session.commit()
             token = serializer.dumps(email, salt='confirmar-email')
@@ -102,24 +115,26 @@ def confirmar_email(token):
     if usuario:
         usuario.confirmado = True
         db.session.commit()
-        return "E-mail confirmado! Agora você pode fazer login."
+        return render_template('email_confirmado.html')
     return "Usuário não encontrado."
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     erro = None
     if request.method == 'POST':
-        nome = request.form['nome']
+        email = request.form['email']
         senha = request.form['senha']
-        usuario = Usuario.query.filter_by(nome=nome, senha=senha).first()
+        usuario = Usuario.query.filter_by(email=email).first()
         if usuario:
             if not usuario.confirmado:
                 erro = "Por favor, confirme seu e-mail antes de fazer login."
-            else:
+            elif check_password_hash(usuario.senha, senha):
                 session['usuario_id'] = usuario.id
                 return redirect('/')
+            else:
+                erro = "E-mail ou senha incorretos!"
         else:
-            erro = "Login ou senha incorretos!"  
+            erro = "E-mail ou senha incorretos!"  
     return render_template('login.html', erro=erro)
 
 @app.route('/perfil')
@@ -135,16 +150,21 @@ def perfil():
         ativo=False
     ).order_by(Treino.data_criacao.desc()).all()
 
-    # Filtros
-    nome_filtro = request.args.get('nome', '').strip()
-    mes_filtro = request.args.get('mes')
-
-    if nome_filtro:
-        treinos_inativos = [t for t in treinos_inativos if nome_filtro.lower() in t.nome.lower()]
-    if mes_filtro:
-        treinos_inativos = [t for t in treinos_inativos if t.data_criacao.month == int(mes_filtro)]
-
     return render_template('perfil.html',usuario=usuario,treinos_inativos=treinos_inativos)
+
+@app.route('/perfil/editar-nome', methods=['POST'])
+def editar_nome():
+    if 'usuario_id' not in session:
+        return redirect('/login')
+
+    novo_nome = request.form['nome']
+
+    usuario = Usuario.query.get_or_404(session['usuario_id'])
+    usuario.nome = novo_nome
+
+    db.session.commit()
+
+    return redirect('/perfil')
 
 @app.route("/enviar-recuperacao", methods=["POST"])
 def enviar_recuperacao():
@@ -222,6 +242,34 @@ def treino():
     db.session.add(novo_treino)
     db.session.commit()
     return redirect('/')
+
+@app.route('/treino/<int:id>/editar', methods=['GET', 'POST'])
+def editar_treino(id):
+    if 'usuario_id' not in session:
+        return redirect('/login')
+
+    treino = Treino.query.filter_by(id=id, usuario_id=session['usuario_id']).first_or_404()
+
+    if request.method == 'POST':
+        treino.nome = request.form['nome']
+        treino.dia_semana = request.form['dia_semana']
+
+        db.session.commit()
+        return redirect('/')
+
+    return render_template('editar_treino.html', treino=treino)
+
+@app.route('/treino/<int:id>/restaurar', methods=['POST'])
+def restaurar_treino(id):
+    if 'usuario_id' not in session:
+        return redirect('/login')
+
+    treino = Treino.query.filter_by(id=id, usuario_id=session['usuario_id']).first_or_404()
+
+    treino.ativo = True  # 🔥 volta a ser ativo
+    db.session.commit()
+
+    return redirect('/perfil')
 
 @app.route('/treino/<int:treino_id>/exercicio', methods=['GET', 'POST'])
 def exercicio(treino_id):
