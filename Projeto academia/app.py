@@ -305,7 +305,7 @@ def encerrar_treino(id):
     total = len(exercicios)
     feitos = sum(1 for e in exercicios if e.concluido)
 
-    # Salva a sessão no desempenho (completa ou incompleta)
+    
     if total > 0:
         sessao = SessaoTreino(
             treino_id=id,
@@ -347,7 +347,7 @@ def restaurar_treino(id):
 
     treino = Treino.query.filter_by(id=id, usuario_id=session['usuario_id']).first_or_404()
 
-    treino.ativo = True  # 🔥 volta a ser ativo
+    treino.ativo = True  
     db.session.commit()
 
     return redirect('/')
@@ -383,7 +383,7 @@ def treinos_detalhes(treino_id):
 
     exercicios = Exercicio.query.filter_by(treino_id=treino_id).all()
 
-    # Calcular progresso
+    
     total = len(exercicios)
     feitos = sum(1 for e in exercicios if e.concluido)
     progresso = int((feitos / total) * 100) if total > 0 else 0
@@ -432,7 +432,7 @@ def deletar_treino_permanente(id):
 
     treino = Treino.query.filter_by(id=id, usuario_id=session['usuario_id']).first_or_404()
 
-    db.session.delete(treino)  # 🔥 agora apaga de verdade
+    db.session.delete(treino)  
     db.session.commit()
 
     return redirect('/')
