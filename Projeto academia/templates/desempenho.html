@@ -1,0 +1,138 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<h2>Meu Desempenho</h2>
+
+<div style="display: flex; gap: 20px; flex-wrap: wrap; margin-bottom: 30px;">
+
+    <div style="border: 1px solid #ccc; padding: 20px; border-radius: 8px; text-align: center; min-width: 160px;">
+        <h1 style="margin: 0; color: #4CAF50;">{{ treinos_completos }}/{{ total_sessoes }}</h1>
+        <p style="margin: 4px 0;">Treinos completos</p>
+        <span style="font-size: 1.2em; font-weight: bold; color: #4CAF50;">{{ pct_treinos }}%</span>
+    </div>
+
+    <div style="border: 1px solid #ccc; padding: 20px; border-radius: 8px; text-align: center; min-width: 160px;">
+        <h1 style="margin: 0; color: #2196F3;">{{ total_exercicios_feitos }}/{{ total_exercicios_possiveis }}</h1>
+        <p style="margin: 4px 0;">Exercícios concluídos</p>
+        <span style="font-size: 1.2em; font-weight: bold; color: #2196F3;">{{ pct_exercicios }}%</span>
+    </div>
+
+    <div style="border: 1px solid #ccc; padding: 20px; border-radius: 8px; text-align: center; min-width: 160px;">
+        <h1 style="margin: 0; color: #FF9800;">{{ total_sessoes }}</h1>
+        <p style="margin: 4px 0;">Total de treinos</p>
+    </div>
+
+</div>
+
+<h3>Frequência Mensal</h3>
+<canvas id="grafico" width="500" height="250"></canvas>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script id="dados" type="application/json">
+    {"labels": {{ labels | tojson }}, "valores": {{ valores | tojson }}}
+</script>
+<script>
+    var dados = JSON.parse(document.getElementById('dados').textContent);
+    var labels = dados.labels;
+    var valores = dados.valores;
+
+    const ctx = document.getElementById('grafico').getContext('2d');
+    new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: labels,
+            datasets: [{
+                label: 'Treinos realizados',
+                data: valores,
+                backgroundColor: '#4CAF50',
+                borderRadius: 6
+            }]
+        },
+        options: {
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: { stepSize: 1 }
+                }
+            },
+            plugins: {
+                legend: { display: false },
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            const val = context.parsed.y;
+                            return val === 1 ? '1 treino realizado' : val + ' treinos realizados';
+                        }
+                    }
+                }
+            }
+        }
+    });
+</script>
+
+<h3>Histórico de Treinos</h3>
+{% if treinos_inativos %}
+<ul>
+    {% for treino in treinos_inativos %}
+    <li>
+        <strong>{{ treino.nome }}</strong> — {{ treino.dia_semana }}
+        <span style="color: #888; font-size: 0.9em;">
+            ({{ treino.data_criacao.strftime('%d/%m/%Y') }})
+        </span>
+
+        <form action="/treino/{{ treino.id }}/restaurar" method="post" style="display:inline;">
+            <button type="submit">Restaurar</button>
+        </form>
+
+        <form action="/treino/{{ treino.id }}/delete-permanente" method="post" style="display:inline;">
+            <button type="submit" style="background-color:red; color:white;">Excluir definitivamente</button>
+        </form>
+    </li>
+    {% endfor %}
+</ul>
+{% else %}
+<p>Nenhum treino no histórico.</p>
+{% endif %}
+
+<br>
+<a href="/" style="text-decoration:none;">
+    <button>Voltar</button>
+</a>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script id="dados" type="application/json">
+    {"labels": {{ labels | tojson }}, "valores": {{ valores | tojson }}}
+</script>
+<script>
+    var dados = JSON.parse(document.getElementById('dados').textContent);
+    var labels = dados.labels;
+    var valores = dados.valores;
+
+    const ctx2 = document.getElementById('grafico').getContext('2d');
+    new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: labels,
+            datasets: [{
+                label: 'Treinos realizados',
+                data: valores,
+                backgroundColor: '#4CAF50',
+                borderRadius: 6
+            }]
+        },
+        options: {
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: { stepSize: 1 }
+                }
+            },
+            plugins: {
+                legend: { display: false }
+            }
+        }
+    });
+</script>
+
+{% endblock %}

@@ -10,10 +10,10 @@ Entre com o seu Login:
 Cadastre-se:
 
 <form action="/cadastro" method="post">
-    <input type="text" name="nome" placeholder="Login" required>
-    <input type="email" name="email" placeholder="E-mail" required>
-    <input type="password" name="senha" placeholder="Senha" required>
-    <input type="password" name="senha_confirm" placeholder="Confirme a senha" required>
+    <input type="text" name="nome" placeholder="Nome" required autocomplete="Nome">
+    <input type="email" name="email" placeholder="E-mail" required autocomplete="new-email">
+    <input type="password" name="senha" placeholder="Senha" required autocomplete="new-password">
+    <input type="password" name="senha_confirm" placeholder="Confirme a senha" required autocomplete="new-password">
     <button type="submit">Registrar</button>
     <p><a href="/recuperar-senha">Esqueceu a senha?</a></p>
 </form>

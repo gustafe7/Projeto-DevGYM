@@ -59,5 +59,9 @@ Dia: {{ treino.dia_semana }}
 <a href="/" style="text-decoration:none;">
     <button>Voltar</button>
 </a>
-
+<form action="/treino/{{ treino.id }}/encerrar" method="post" style="margin-top: 15px;">
+    <button type="submit" style="background-color: #4CAF50; color: white;">
+        Encerrar treino
+    </button>
+</form>
 {% endblock %}

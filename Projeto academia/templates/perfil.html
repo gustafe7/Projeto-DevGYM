@@ -21,26 +21,6 @@
     <p><strong>Confirmado:</strong> {{ 'Sim' if usuario.confirmado else 'Não' }}</p>
 </div>
 
-<h3>Histórico de Treinos</h3>
-
-<ul>
-    {% for treino in treinos_inativos %}
-        <li>
-            {{ treino.nome }} - {{ treino.dia_semana }} - {{ treino.data_criacao.strftime('%d/%m/%Y') }}
-
-            <form action="/treino/{{ treino.id }}/restaurar" method="post" style="display:inline;">
-                <button type="submit">Restaurar</button>
-            </form>
-
-            <form action="/treino/{{ treino.id }}/delete-permanente" method="post" style="display:inline;">
-                <button type="submit" style="background-color:red; color:white;">
-                    Excluir definitivamente
-                </button>
-            </form>
-        </li>
-    {% endfor %}
-</ul>
-
 <br><br>
 <a href="/" style="text-decoration:none;">
     <button>Voltar</button>

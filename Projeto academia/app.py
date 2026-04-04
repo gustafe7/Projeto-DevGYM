@@ -62,7 +62,15 @@ class Exercicio(db.Model):
     nome = db.Column(db.String(100), nullable=False)
     treino_id = db.Column(db.Integer, db.ForeignKey('treino.id'), nullable=False)
     concluido = db.Column(db.Boolean, default=False)
-    
+
+class SessaoTreino(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    treino_id = db.Column(db.Integer, db.ForeignKey('treino.id'), nullable=False)
+    usuario_id = db.Column(db.Integer, db.ForeignKey('usuario.id'), nullable=False)
+    data = db.Column(db.Date, nullable=False)
+    total_exercicios = db.Column(db.Integer, nullable=False)
+    exercicios_concluidos = db.Column(db.Integer, nullable=False)    
+
 @app.route('/')
 def index():
     if 'usuario_id' not in session:
@@ -151,6 +159,49 @@ def perfil():
     ).order_by(Treino.data_criacao.desc()).all()
 
     return render_template('perfil.html',usuario=usuario,treinos_inativos=treinos_inativos)
+
+@app.route('/desempenho')
+def desempenho():
+    if 'usuario_id' not in session:
+        return redirect('/login')
+
+    usuario_id = session['usuario_id']
+
+    sessoes = SessaoTreino.query.filter_by(usuario_id=usuario_id).order_by(SessaoTreino.data.desc()).all()
+
+    total_sessoes = len(sessoes)
+    treinos_completos = sum(1 for s in sessoes if s.exercicios_concluidos == s.total_exercicios)
+    treinos_incompletos = total_sessoes - treinos_completos
+
+    total_exercicios_feitos = sum(s.exercicios_concluidos for s in sessoes)
+    total_exercicios_possiveis = sum(s.total_exercicios for s in sessoes)
+
+    pct_treinos = int((treinos_completos / total_sessoes) * 100) if total_sessoes > 0 else 0
+    pct_exercicios = int((total_exercicios_feitos / total_exercicios_possiveis) * 100) if total_exercicios_possiveis > 0 else 0
+
+    from collections import Counter
+
+    meses_nomes = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun',
+                'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez']
+
+    frequencia_mensal = Counter(s.data.month for s in sessoes)
+    labels = meses_nomes
+    valores = [frequencia_mensal.get(i + 1, 0) for i in range(12)]
+
+    treinos_inativos = Treino.query.filter_by(usuario_id=usuario_id, ativo=False).order_by(Treino.data_criacao.desc()).all()
+
+    return render_template('desempenho.html',
+        total_sessoes=total_sessoes,
+        treinos_completos=treinos_completos,
+        treinos_incompletos=treinos_incompletos,
+        total_exercicios_feitos=total_exercicios_feitos,
+        total_exercicios_possiveis=total_exercicios_possiveis,
+        pct_treinos=pct_treinos,
+        pct_exercicios=pct_exercicios,
+        sessoes=sessoes,
+        labels=labels,
+        valores=valores,
+        treinos_inativos=treinos_inativos)
 
 @app.route('/perfil/editar-nome', methods=['POST'])
 def editar_nome():
@@ -243,6 +294,36 @@ def treino():
     db.session.commit()
     return redirect('/')
 
+@app.route('/treino/<int:id>/encerrar', methods=['POST'])
+def encerrar_treino(id):
+    if 'usuario_id' not in session:
+        return redirect('/login')
+
+    treino = Treino.query.filter_by(id=id, usuario_id=session['usuario_id']).first_or_404()
+
+    exercicios = Exercicio.query.filter_by(treino_id=id).all()
+    total = len(exercicios)
+    feitos = sum(1 for e in exercicios if e.concluido)
+
+    # Salva a sessão no desempenho (completa ou incompleta)
+    if total > 0:
+        sessao = SessaoTreino(
+            treino_id=id,
+            usuario_id=session['usuario_id'],
+            data=datetime.utcnow().date(),
+            total_exercicios=total,
+            exercicios_concluidos=feitos
+        )
+        db.session.add(sessao)
+
+    # Reseta os exercícios
+    for e in exercicios:
+        e.concluido = False
+
+    db.session.commit()
+
+    return redirect('/')
+
 @app.route('/treino/<int:id>/editar', methods=['GET', 'POST'])
 def editar_treino(id):
     if 'usuario_id' not in session:
@@ -269,7 +350,7 @@ def restaurar_treino(id):
     treino.ativo = True  # 🔥 volta a ser ativo
     db.session.commit()
 
-    return redirect('/perfil')
+    return redirect('/')
 
 @app.route('/treino/<int:treino_id>/exercicio', methods=['GET', 'POST'])
 def exercicio(treino_id):
@@ -354,7 +435,7 @@ def deletar_treino_permanente(id):
     db.session.delete(treino)  # 🔥 agora apaga de verdade
     db.session.commit()
 
-    return redirect('/perfil')
+    return redirect('/')
 
 @app.route('/delete/<int:id>', methods=['POST'])
 def delete(id):
