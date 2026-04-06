@@ -179,6 +179,9 @@ def desempenho():
     pct_treinos = int((treinos_completos / total_sessoes) * 100) if total_sessoes > 0 else 0
     pct_exercicios = int((total_exercicios_feitos / total_exercicios_possiveis) * 100) if total_exercicios_possiveis > 0 else 0
 
+    pagina = request.args.get('pagina', 1, type=int)
+    por_pagina = 10
+
     from collections import Counter
 
     meses_nomes = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun',
@@ -188,7 +191,7 @@ def desempenho():
     labels = meses_nomes
     valores = [frequencia_mensal.get(i + 1, 0) for i in range(12)]
 
-    treinos_inativos = Treino.query.filter_by(usuario_id=usuario_id, ativo=False).order_by(Treino.data_criacao.desc()).all()
+    treinos_inativos = Treino.query.filter_by(usuario_id=usuario_id, ativo=False).order_by(Treino.data_criacao.desc()).paginate(page=pagina, per_page=por_pagina, error_out=False)
 
     return render_template('desempenho.html',
         total_sessoes=total_sessoes,
@@ -434,6 +437,9 @@ def deletar_treino_permanente(id):
 
     db.session.delete(treino)  
     db.session.commit()
+
+    if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+        return '', 204
 
     return redirect('/')
 
