@@ -42,7 +42,7 @@ Projeto em desenvolvimento de uma aplicação web para registro e acompanhamento
 
 ```bash
 # Clone o repositório
-git clone <seu-repositorio>
+git clone <link-repositorio>
 
 # Acesse a pasta
 cd <nome-do-projeto>
