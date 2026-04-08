@@ -25,6 +25,24 @@
 
 </div>
 
+<div style="border: 1px solid #ccc; padding: 20px; border-radius: 8px; text-align: center; min-width: 160px;">
+    <h3>🔥 Sequência Atual</h3>
+    <h1>{{ streak }} dias</h1>
+    <p>
+        {% if streak == 1 %}
+            1 dia consecutivo treinado
+        {% else %}
+            {{ streak }} dias consecutivos treinados
+        {% endif %}
+    </p>
+</div>
+
+<div style="border: 1px solid #ccc; padding: 20px; border-radius: 8px; text-align: center; min-width: 160px;">
+    <h3>🏆 Recorde de Sequência</h3>
+    <h1>{{ streak_max }} dias</h1>
+    <p>seu melhor desempenho</p>
+</div>
+
 <h3>Frequência Mensal</h3>
 <canvas id="grafico" width="500" height="250"></canvas>
 
@@ -70,6 +88,53 @@
         }
     });
 </script>
+
+<h3>Evolução de Carga</h3>
+
+{% if exercicios_nomes %}
+<form method="get">
+    <label>Selecione o exercício:</label>
+    <select name="exercicio" onchange="this.form.submit()">
+        {% for ex in exercicios_nomes %}
+            <option value="{{ ex }}" {% if ex == exercicio_selecionado %}selected{% endif %}>{{ ex }}</option>
+        {% endfor %}
+    </select>
+</form>
+
+<br>
+
+<canvas id="graficoCarga" width="500" height="250"></canvas>
+
+<script id="dadosCarga" type="application/json">
+    {"labels": {{ labels_carga | tojson }}, "valores": {{ valores_carga | tojson }}}
+</script>
+<script>
+    var dadosCarga = JSON.parse(document.getElementById('dadosCarga').textContent);
+    const ctxCarga = document.getElementById('graficoCarga').getContext('2d');
+    new Chart(ctxCarga, {
+        type: 'line',
+        data: {
+            labels: dadosCarga.labels,
+            datasets: [{
+                label: 'Carga (kg)',
+                data: dadosCarga.valores,
+                borderColor: '#2196F3',
+                backgroundColor: 'rgba(33,150,243,0.1)',
+                tension: 0.3,
+                fill: true
+            }]
+        },
+        options: {
+            scales: {
+                y: { beginAtZero: true }
+            }
+        }
+    });
+</script>
+
+{% else %}
+<p>Nenhum dado de carga ainda. Encerre um treino com exercícios com carga para ver o gráfico.</p>
+{% endif %}
 
 {% if treinos_inativos.total > 0 %}
     <h3>Histórico de Treinos</h3>

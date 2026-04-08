@@ -1,30 +1,57 @@
 {% extends 'base.html' %}
 
 {% block content %}
-<h2>Perfil do Usuário</h2>
+<h2>👤 Meu Perfil</h2>
 
-<div style="border: 1px solid #ccc; padding: 20px; width: 400px;">
-    <strong>Nome:</strong>
-        
-        <form id="form-nome" action="/perfil/editar-nome" method="post" style="display:inline;">
-    
-        <span id="nome-texto">{{ usuario.nome }}</span>
-    
-        <input type="text" id="nome-input" name="nome" value="{{ usuario.nome }}" 
-           style="display:none;" required>
+<div style="display: flex; gap: 30px; flex-wrap: wrap;">
 
-        <button type="button" id="btn-editar" onclick="editarNome()">Editar</button>
-        <button type="submit" id="btn-salvar" style="display:none;">Salvar</button>
+    <!-- 🧑 Informações -->
+    <div style="border: 1px solid #ccc; padding: 20px; border-radius: 8px; min-width: 300px;">
+        <h3>Informações</h3>
 
-    </form>
-    <p><strong>Email:</strong> {{ usuario.email }}</p>
-    <p><strong>Confirmado:</strong> {{ 'Sim' if usuario.confirmado else 'Não' }}</p>
+        <strong>Nome:</strong>
+        <form action="/perfil/editar-nome" method="post" style="display:inline;">
+            <span id="nome-texto">{{ usuario.nome }}</span>
+
+            <input type="text" id="nome-input" name="nome" value="{{ usuario.nome }}" 
+                style="display:none;" required>
+
+            <button type="button" id="btn-editar" onclick="editarNome()">✏️</button>
+            <button type="submit" id="btn-salvar" style="display:none;">Salvar</button>
+        </form>
+
+        <p><strong>Email:</strong> {{ usuario.email }}</p>
+        <p><strong>Conta confirmada:</strong> {{ 'Sim' if usuario.confirmado else 'Não' }}</p>
+    </div>
+
+    <!-- 🔥 Resumo -->
+    <div style="border: 1px solid #ccc; padding: 20px; border-radius: 8px; min-width: 200px; text-align: center;">
+        <h3>🔥 Sequência Atual</h3>
+        <h1>{{ streak }} dias</h1>
+
+        <p>
+            {% if streak == 1 %}
+                1 dia consecutivo
+            {% else %}
+                {{ streak }} dias consecutivos
+            {% endif %}
+        </p>
+    </div>
+
+    <!-- 🏆 Recorde -->
+    <div style="border: 1px solid #ccc; padding: 20px; border-radius: 8px; min-width: 200px; text-align: center;">
+        <h3>🏆 Recorde</h3>
+        <h1>{{ streak_max }} dias</h1>
+        <p>seu melhor desempenho</p>
+    </div>
+
 </div>
 
-<br><br>
-<a href="/" style="text-decoration:none;">
+<br>
+<a href="/">
     <button>Voltar</button>
 </a>
+</br>
 
 <script>
 function editarNome() {
@@ -34,4 +61,5 @@ function editarNome() {
     document.getElementById('btn-salvar').style.display = 'inline';
 }
 </script>
+
 {% endblock %}

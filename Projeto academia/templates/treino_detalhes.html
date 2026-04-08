@@ -8,15 +8,18 @@ Dia: {{ treino.dia_semana }}
 <h4>Adicionar Exercício</h4>
 <form action="{{ url_for('treinos_detalhes', treino_id=treino.id) }}" method="post">
     <input type="text" name="nome_exercicio" placeholder="Nome do exercício" required>
+    <input type="number" name="series" placeholder="Séries" min="1">
+    <input type="number" name="repeticoes" placeholder="Repetições" min="1">
+    <input type="number" name="carga" placeholder="Carga (kg)" min="0" step="0.5">
     <button type="submit">Adicionar</button>
 </form>
 
 <h2>Exercícios</h2>
-
+<div id="lista-exercicios">
 {% for exercicio in exercicios %} 
-<div style="display: flex; align-items: center; gap: 8px; margin-bottom: 5px;"> 
+<div data-id="{{ exercicio.id }}" style="display: flex; align-items: center; gap: 8px; margin-bottom: 5px;"> 
 
-    <span>{{ exercicio.nome }}</span>
+    <span>{{ exercicio.nome }} — {{ exercicio.series }}x{{ exercicio.repeticoes }} | {{ exercicio.carga }}kg</span>
 
     {% if exercicio.concluido %} 
         ✔ 
@@ -32,13 +35,29 @@ Dia: {{ treino.dia_semana }}
         {% endif %}
     </form> 
 
-    <form action="/exercicio/{{ exercicio.id }}/delete" method="post" style="display:inline;">
-        <button type="submit">Excluir</button>
-    </form>
+    <!-- Menu dropdown -->
+    <div class="dropdown">
+        <button type="button" onclick="toggleDropdown('menu-{{ exercicio.id }}')">⋮</button>
+        <div id="menu-{{ exercicio.id }}" style="display:none; position:absolute; background:#444; z-index:10; border-radius:4px; min-width:150px;">
+        
+            <!-- Editar -->
+            <div style="padding: 10px;">
+                <input type="text" id="nome-{{ exercicio.id }}" value="{{ exercicio.nome }}" style="width:100%; margin-bottom:4px;">
+                <input type="number" id="series-{{ exercicio.id }}" value="{{ exercicio.series }}" placeholder="Séries" style="width:100%; margin-bottom:4px;">
+                <input type="number" id="repeticoes-{{ exercicio.id }}" value="{{ exercicio.repeticoes }}" placeholder="Reps" style="width:100%; margin-bottom:4px;">
+                <input type="number" id="carga-{{ exercicio.id }}" value="{{ exercicio.carga }}" placeholder="Carga" step="0.5" style="width:100%; margin-bottom:8px;">
+                <button type="button" onclick="salvarEdicao(this)" data-id="{{ exercicio.id }}" style="width:100%;">Salvar</button>
+            </div>
 
-</div> 
+            <!-- Excluir -->
+            <form action="/exercicio/{{ exercicio.id }}/delete" method="post">
+                <button type="submit" style="width:100%; background:red; color:white; border:none; padding:8px; cursor:pointer;">Excluir</button>
+            </form>
+        </div>
+    </div>
+</div>
 {% endfor %}
-
+</div>
 <br>
 
 <h3>Progresso do treino</h3>
@@ -55,6 +74,21 @@ Dia: {{ treino.dia_semana }}
 </p>
 {% endif %}
 
+<h3>Notas do treino</h3>
+<form action="/treino/{{ treino.id }}/notas" method="post">
+    <textarea name="notas" rows="4" cols="50" placeholder="Anotações sobre o treino...">{{ treino.notas }}</textarea>
+    <br>
+    <button type="submit">Salvar notas</button>
+</form>
+
+{% with messages = get_flashed_messages() %}
+    {% if messages %}
+        {% for message in messages %}
+            <p style="color: green;">{{ message }}</p>
+        {% endfor %}
+    {% endif %}
+{% endwith %}
+
 <br><br>
 <a href="/" style="text-decoration:none;">
     <button>Voltar</button>
@@ -64,4 +98,67 @@ Dia: {{ treino.dia_semana }}
         Encerrar treino
     </button>
 </form>
+
+<script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
+<script>
+    const lista = document.getElementById('lista-exercicios');
+    Sortable.create(lista, {
+        animation: 150,
+        onEnd: function() {
+            const itens = lista.querySelectorAll('[data-id]');
+            const dados = Array.from(itens).map((el, index) => ({
+                id: parseInt(el.getAttribute('data-id')),
+                ordem: index
+            }));
+
+            fetch('/treino/{{ treino.id }}/reordenar', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(dados)
+            });
+        }
+    });
+</script>
+
+<script>
+function toggleDropdown(id) {
+    const menu = document.getElementById(id);
+    document.querySelectorAll('[id^="menu-"]').forEach(m => {
+        if (m.id !== id) m.style.display = 'none';
+    });
+    menu.style.display = menu.style.display === 'block' ? 'none' : 'block';
+}
+
+function salvarEdicao(btn) {
+    const id = btn.getAttribute('data-id');
+    const form = document.createElement('form');
+    form.method = 'POST';
+    form.action = '/exercicio/' + id + '/editar';
+
+    const campos = {
+        nome: document.getElementById('nome-' + id).value,
+        series: document.getElementById('series-' + id).value,
+        repeticoes: document.getElementById('repeticoes-' + id).value,
+        carga: document.getElementById('carga-' + id).value
+    };
+
+    for (const [key, value] of Object.entries(campos)) {
+        const input = document.createElement('input');
+        input.type = 'hidden';
+        input.name = key;
+        input.value = value;
+        form.appendChild(input);
+    }
+
+    document.body.appendChild(form);
+    form.submit();
+}
+
+window.onclick = function(event) {
+    if (!event.target.matches('[onclick^="toggleDropdown"]')) {
+        document.querySelectorAll('[id^="menu-"]').forEach(m => m.style.display = 'none');
+    }
+}
+</script>
+
 {% endblock %}

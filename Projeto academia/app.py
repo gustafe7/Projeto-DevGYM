@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, redirect, session, url_for
+from flask import Flask, render_template, request, redirect, session, url_for, flash
 from flask_sqlalchemy import SQLAlchemy
 from flask_mail import Mail, Message
 from itsdangerous import URLSafeTimedSerializer
@@ -39,6 +39,57 @@ def senha_forte(senha):
 def gerar_token(usuario_email):
     return serializer.dumps(usuario_email, salt='recuperar-senha')
 
+def calcular_streak(usuario_id):
+    from datetime import date, timedelta
+    sessoes = SessaoTreino.query.filter_by(usuario_id=usuario_id).order_by(SessaoTreino.data.desc()).all()
+    datas = list(set(s.data for s in sessoes))
+    datas.sort(reverse=True)
+
+    if not datas:
+        return 0
+
+    hoje = date.today()
+
+    if datas[0] == hoje:
+        inicio = hoje
+    else:
+        inicio = hoje - timedelta(days=1)
+    streak = 0
+
+    for i, data in enumerate(datas):
+        esperado = hoje - timedelta(days=i)
+        if data == esperado:
+            streak += 1
+        else:
+            break
+
+    return streak
+
+def calcular_streak_max(usuario_id):
+    from datetime import timedelta
+
+    sessoes = SessaoTreino.query.filter_by(usuario_id=usuario_id)\
+        .order_by(SessaoTreino.data.asc()).all()
+
+    datas = list(set(s.data for s in sessoes))
+    datas.sort()
+
+    if not datas:
+        return 0
+
+    max_streak = 1
+    streak_atual = 1
+
+    for i in range(1, len(datas)):
+        if datas[i] == datas[i-1] + timedelta(days=1):
+            streak_atual += 1
+            if streak_atual > max_streak:
+                max_streak = streak_atual
+        else:
+            streak_atual = 1
+
+    return max_streak
+
 class Usuario(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     nome = db.Column(db.String(100), nullable=False)
@@ -53,6 +104,7 @@ class Treino(db.Model):
     usuario_id = db.Column(db.Integer, db.ForeignKey('usuario.id'), nullable=False)
     data_criacao = db.Column(db.DateTime, default=datetime.utcnow)
     ativo = db.Column(db.Boolean, default=True)
+    notas = db.Column(db.Text, default="")
 
     # Relacionamento com cascade para deletar exercícios quando um treino for deletado
     exercicios = db.relationship('Exercicio', backref='treino', cascade="all, delete-orphan")
@@ -62,6 +114,10 @@ class Exercicio(db.Model):
     nome = db.Column(db.String(100), nullable=False)
     treino_id = db.Column(db.Integer, db.ForeignKey('treino.id'), nullable=False)
     concluido = db.Column(db.Boolean, default=False)
+    series = db.Column(db.Integer, default=3)
+    repeticoes = db.Column(db.Integer, default=10)
+    carga = db.Column(db.Float, default=0.0)
+    ordem = db.Column(db.Integer, default=0)
 
 class SessaoTreino(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -70,6 +126,13 @@ class SessaoTreino(db.Model):
     data = db.Column(db.Date, nullable=False)
     total_exercicios = db.Column(db.Integer, nullable=False)
     exercicios_concluidos = db.Column(db.Integer, nullable=False)    
+
+class HistoricoCarga(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    usuario_id = db.Column(db.Integer, db.ForeignKey('usuario.id'), nullable=False)
+    exercicio_nome = db.Column(db.String(100), nullable=False)
+    carga = db.Column(db.Float, nullable=False)
+    data = db.Column(db.Date, nullable=False)
 
 @app.route('/')
 def index():
@@ -158,7 +221,9 @@ def perfil():
         ativo=False
     ).order_by(Treino.data_criacao.desc()).all()
 
-    return render_template('perfil.html',usuario=usuario,treinos_inativos=treinos_inativos)
+    streak = calcular_streak(usuario.id)
+    streak_max = calcular_streak_max(usuario.id)
+    return render_template('perfil.html',usuario=usuario,treinos_inativos=treinos_inativos, streak=streak, streak_max=streak_max)
 
 @app.route('/desempenho')
 def desempenho():
@@ -193,6 +258,25 @@ def desempenho():
 
     treinos_inativos = Treino.query.filter_by(usuario_id=usuario_id, ativo=False).order_by(Treino.data_criacao.desc()).paginate(page=pagina, per_page=por_pagina, error_out=False)
 
+    exercicios_nomes = db.session.query(HistoricoCarga.exercicio_nome).filter_by(
+        usuario_id=usuario_id
+    ).distinct().all()
+    exercicios_nomes = [e[0] for e in exercicios_nomes]
+
+    exercicio_selecionado = request.args.get('exercicio', exercicios_nomes[0] if exercicios_nomes else None)
+
+    dados_carga = []
+    if exercicio_selecionado:
+        dados_carga = HistoricoCarga.query.filter_by(
+            usuario_id=usuario_id,
+            exercicio_nome=exercicio_selecionado
+        ).order_by(HistoricoCarga.data).all()
+
+    labels_carga = [str(d.data) for d in dados_carga]
+    valores_carga = [d.carga for d in dados_carga]
+    streak = calcular_streak(usuario_id)
+    streak_max = calcular_streak_max(usuario_id)
+
     return render_template('desempenho.html',
         total_sessoes=total_sessoes,
         treinos_completos=treinos_completos,
@@ -204,7 +288,13 @@ def desempenho():
         sessoes=sessoes,
         labels=labels,
         valores=valores,
-        treinos_inativos=treinos_inativos)
+        treinos_inativos=treinos_inativos,
+        exercicios_nomes=exercicios_nomes,
+        exercicio_selecionado=exercicio_selecionado,
+        labels_carga=labels_carga,
+        valores_carga=valores_carga,
+        streak=streak,
+        streak_max=streak_max,)
 
 @app.route('/perfil/editar-nome', methods=['POST'])
 def editar_nome():
@@ -319,6 +409,16 @@ def encerrar_treino(id):
         )
         db.session.add(sessao)
 
+    for e in exercicios:
+        if e.carga and e.carga > 0:
+            historico = HistoricoCarga(
+                usuario_id=session['usuario_id'],
+                exercicio_nome=e.nome,
+                carga=e.carga,
+                data=datetime.utcnow().date()
+            )
+            db.session.add(historico)
+
     # Reseta os exercícios
     for e in exercicios:
         e.concluido = False
@@ -355,6 +455,17 @@ def restaurar_treino(id):
 
     return redirect('/')
 
+@app.route('/treino/<int:treino_id>/notas', methods=['POST'])
+def salvar_notas(treino_id):
+    if 'usuario_id' not in session:
+        return '', 401
+    
+    treino = Treino.query.filter_by(id=treino_id, usuario_id=session['usuario_id']).first_or_404()
+    treino.notas = request.form.get('notas', '')
+    db.session.commit()
+    flash('Notas salvas com sucesso!')
+    return redirect(url_for('treinos_detalhes', treino_id=treino_id))
+
 @app.route('/treino/<int:treino_id>/exercicio', methods=['GET', 'POST'])
 def exercicio(treino_id):
     if 'usuario_id' not in session:
@@ -370,6 +481,34 @@ def exercicio(treino_id):
         return redirect(f'/treino/{treino_id}')
     return render_template('exercicio.html', treino=treino)
 
+@app.route('/exercicio/<int:id>/editar', methods=['POST'])
+def editar_exercicio(id):
+    if 'usuario_id' not in session:
+        return redirect('/login')
+    
+    exercicio = Exercicio.query.get_or_404(id)
+    exercicio.nome = request.form.get('nome', exercicio.nome)
+    exercicio.series = int(request.form.get('series', exercicio.series))
+    exercicio.repeticoes = int(request.form.get('repeticoes', exercicio.repeticoes))
+    exercicio.carga = float(request.form.get('carga', exercicio.carga))
+    
+    db.session.commit()
+    return redirect(f'/treino/{exercicio.treino_id}')
+
+@app.route('/treino/<int:treino_id>/reordenar', methods=['POST'])
+def reordenar_exercicios(treino_id):
+    if 'usuario_id' not in session:
+        return '', 401
+    
+    dados = request.get_json()
+    for item in dados:
+        exercicio = Exercicio.query.get(item['id'])
+        if exercicio:
+            exercicio.ordem = item['ordem']
+    
+    db.session.commit()
+    return '', 204
+
 @app.route('/treino/<int:treino_id>', methods=['GET', 'POST'])
 def treinos_detalhes(treino_id):
     if 'usuario_id' not in session:
@@ -379,12 +518,18 @@ def treinos_detalhes(treino_id):
     
     if request.method == 'POST':
         nome_exercicio = request.form['nome_exercicio']
-        novo_exercicio = Exercicio(nome=nome_exercicio, treino_id=treino_id)
+        novo_exercicio = Exercicio(
+        nome=nome_exercicio,
+        treino_id=treino_id,
+        series=int(request.form.get('series', 3)),
+        repeticoes=int(request.form.get('repeticoes', 10)),
+        carga=float(request.form.get('carga', 0.0))
+        )
         db.session.add(novo_exercicio)
         db.session.commit()
         return redirect(url_for('treinos_detalhes', treino_id=treino_id))
 
-    exercicios = Exercicio.query.filter_by(treino_id=treino_id).all()
+    exercicios = Exercicio.query.filter_by(treino_id=treino_id).order_by(Exercicio.ordem).all()
 
     
     total = len(exercicios)
