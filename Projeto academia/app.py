@@ -96,7 +96,7 @@ def calcular_streak_max(usuario_id):
 class Usuario(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     nome = db.Column(db.String(100), nullable=False)
-    senha = db.Column(db.String(100), nullable=False)
+    senha = db.Column(db.String(256), nullable=False)
     email = db.Column(db.String(100), nullable=False)
     confirmado = db.Column(db.Boolean, default=False)
 
