@@ -57,7 +57,7 @@
 {% if progresso == 100 %}
 <p style="color: #4CAF50; font-weight: bold; margin-top: 10px;">Parabéns! O seu treino foi finalizado! 🎉</p>
 {% endif %}
-
+    
 <h3 style="margin-top: 24px;">Notas do treino</h3>
 <form action="/treino/{{ treino.id }}/notas" method="post" style="max-width: 500px;">
     <textarea name="notas" placeholder="Anotações sobre o treino...">{{ treino.notas }}</textarea>
