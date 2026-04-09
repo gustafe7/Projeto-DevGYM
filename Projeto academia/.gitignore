@@ -1,2 +1,5 @@
 database.db
 .env
+__pycache__
+*.pyc
+instance
