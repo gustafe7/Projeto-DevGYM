@@ -1,54 +1,45 @@
-# 🏋️‍♂️ Sistema de Controle de Treinos
+# 🏋️ DevGym
 
-Projeto em desenvolvimento de uma aplicação web para registro e acompanhamento de treinos.
+**DevGym** é uma aplicação web para gerenciamento de treinos de academia, desenvolvida como projeto pessoal para aprimorar habilidades em desenvolvimento web.
 
----
+## 💡 Motivação
 
-## 🚀 Funcionalidades atuais
+A ideia surgiu de uma situação do dia a dia: minha esposa treina na academia e anotava seus treinos no bloco de notas do celular. Queria criar algo real, que resolvesse um problema real — e foi aí que nasceu o DevGym.
 
-- ✅ Cadastro e login de usuários
-- ✅ Confirmação de conta por email
-- ✅ Recuperação de senha
-- ✅ Registro de sessões de treino
-- ✅ Página de desempenho
-- ✅ Cálculo de sequência de dias treinados (streak)
-- ✅ Recorde de sequência
-- ✅ Página de perfil com edição de nome
-- ✅ Upload de foto de perfil
+O objetivo foi construir uma plataforma simples e funcional onde ela pudesse organizar seus treinos, registrar séries, repetições e cargas, e acompanhar sua evolução ao longo do tempo.
 
----
+## ✨ Funcionalidades
 
-## 🧠 Funcionalidades em desenvolvimento
-
-- 🔄 Mensagens inteligentes de motivação
-- 🔄 Metas semanais
-- 🔄 Sistema de conquistas (gamificação)
-- 🔄 Calendário de treinos
-
----
+- Cadastro e autenticação de usuários com confirmação por e-mail
+- Criação e organização de treinos por dia da semana
+- Adição de exercícios com séries, repetições e carga
+- Reordenação de exercícios por arrastar e soltar
+- Marcação de exercícios como concluídos com barra de progresso
+- Encerramento de treino com registro de sessão
+- Notas por treino
+- Página de desempenho com:
+  - Gráfico de frequência mensal
+  - Gráfico de evolução de carga por exercício
+  - Sequência atual de treinos (streak)
+  - Recorde de sequência
+- Histórico de treinos encerrados com opção de restaurar
+- Recuperação de senha por e-mail
+- Perfil do usuário
 
 ## 🛠️ Tecnologias utilizadas
 
-- Python
-- Flask
-- SQLAlchemy
-- HTML / CSS
-- JavaScript
-- Flask-Mail
+- **Python** + **Flask**
+- **SQLAlchemy** + **SQLite**
+- **Flask-Mail** para envio de e-mails
+- **Werkzeug** para segurança de senhas
+- **Chart.js** para gráficos
+- **SortableJS** para reordenação de exercícios
+- **HTML**, **CSS** e **JavaScript** no frontend
 
----
+## 🚀 Deploy
 
-## ⚙️ Como rodar o projeto
+A aplicação está disponível em: [https://devgym-9qwp.onrender.com](https://devgym-9qwp.onrender.com)
 
-```bash
-# Clone o repositório
-git clone <link-repositorio>
+## 👨‍💻 Autor
 
-# Acesse a pasta
-cd <nome-do-projeto>
-
-# Instale as dependências
-pip install -r requirements.txt
-
-# Execute o projeto
-python app.py
+Desenvolvido por **Gustavo** como projeto de portfólio e aprendizado em desenvolvimento web.
