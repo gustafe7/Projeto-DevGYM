@@ -446,12 +446,14 @@ def editar_treino(id):
 @app.route('/treino/<int:id>/restaurar', methods=['POST'])
 def restaurar_treino(id):
     if 'usuario_id' not in session:
-        return redirect('/login')
+        return '', 401
 
     treino = Treino.query.filter_by(id=id, usuario_id=session['usuario_id']).first_or_404()
-
-    treino.ativo = True  
+    treino.ativo = True
     db.session.commit()
+
+    if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+        return '', 204
 
     return redirect('/')
 
@@ -541,11 +543,19 @@ def treinos_detalhes(treino_id):
 @app.route('/exercicio/<int:id>/concluir', methods=['POST'])
 def concluir_exercicio(id):
     if 'usuario_id' not in session:
-        return redirect('/login')
+        return '', 401
     exercicio = Exercicio.query.get_or_404(id)
-    treino = Treino.query.filter_by(id=exercicio.treino_id,usuario_id=session['usuario_id']).first_or_404()
+    treino = Treino.query.filter_by(id=exercicio.treino_id, usuario_id=session['usuario_id']).first_or_404()
     exercicio.concluido = not exercicio.concluido
     db.session.commit()
+
+    if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+        exercicios = Exercicio.query.filter_by(treino_id=exercicio.treino_id).all()
+        total = len(exercicios)
+        feitos = sum(1 for e in exercicios if e.concluido)
+        progresso = int((feitos / total) * 100) if total > 0 else 0
+        return {'concluido': exercicio.concluido, 'progresso': progresso}
+
     return redirect(f'/treino/{exercicio.treino_id}')
 
 @app.route('/exercicio/<int:id>/delete', methods=['POST'])

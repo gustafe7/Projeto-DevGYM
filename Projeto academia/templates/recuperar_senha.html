@@ -1,6 +1,26 @@
-<h2>Recuperar senha</h2>
-<form action="/enviar-recuperacao" method="post">
-    <input type="email" name="email" placeholder="Digite seu e-mail" required>
-    <button type="submit">Enviar link de recuperação</button>
-</form>
-<a href="/login">Voltar para login</a>
+<!DOCTYPE html>
+<html>
+<head>
+    <title>DEVGYM</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+
+<div class="login-container">
+    <h1>DEVGYM</h1>
+    <h2 style="font-size: 1.2rem; margin-bottom: 20px;">Recuperar senha</h2>
+
+    <form action="/enviar-recuperacao" method="post">
+        <input type="email" name="email" placeholder="Digite seu e-mail" required>
+        <button type="submit">Enviar link de recuperação</button>
+    </form>
+
+    <div style="margin-top: 16px;">
+        <a href="/login">Voltar para login</a>
+    </div>
+</div>
+
+</body>
+</html>

@@ -2,11 +2,11 @@
 
 {% block content %}
 
-<h2> Treino: {{ treino.nome }}</h2>
-Dia: {{ treino.dia_semana }}
+<h2>Treino: {{ treino.nome }}</h2>
+<p>Dia: {{ treino.dia_semana }}</p>
 
-<h4>Adicionar Exercício</h4>
-<form action="{{ url_for('treinos_detalhes', treino_id=treino.id) }}" method="post">
+<h3 style="margin-top: 24px;">Adicionar Exercício</h3>
+<form action="{{ url_for('treinos_detalhes', treino_id=treino.id) }}" method="post" style="max-width: 500px;">
     <input type="text" name="nome_exercicio" placeholder="Nome do exercício" required>
     <input type="number" name="series" placeholder="Séries" min="1">
     <input type="number" name="repeticoes" placeholder="Repetições" min="1">
@@ -14,90 +14,70 @@ Dia: {{ treino.dia_semana }}
     <button type="submit">Adicionar</button>
 </form>
 
-<h2>Exercícios</h2>
+<h2 style="margin-top: 32px;">Exercícios</h2>
 <div id="lista-exercicios">
-{% for exercicio in exercicios %} 
-<div data-id="{{ exercicio.id }}" style="display: flex; align-items: center; gap: 8px; margin-bottom: 5px;"> 
+{% for exercicio in exercicios %}
+<div class="exercicio-item" data-id="{{ exercicio.id }}">
 
-    <span>{{ exercicio.nome }} — {{ exercicio.series }}x{{ exercicio.repeticoes }} | {{ exercicio.carga }}kg</span>
+    <span style="flex: 1; color: #f0f0f0;">
+        {{ exercicio.nome }} — {{ exercicio.series }}x{{ exercicio.repeticoes }} | {{ exercicio.carga }}kg
+    </span>
 
-    {% if exercicio.concluido %} 
-        ✔ 
-    {% else %} 
-        ❌ 
-    {% endif %} 
+    <span id="icone-{{ exercicio.id }}">{% if exercicio.concluido %}✔{% else %}❌{% endif %}</span>
 
-    <form action="/exercicio/{{ exercicio.id }}/concluir" method="post" style="display:inline;"> 
-        {% if exercicio.concluido %}
-            <button type="submit">Desmarcar</button> 
-        {% else %}
-            <button type="submit">Concluir</button>
-        {% endif %}
-    </form> 
+    <button type="button" id="btn-concluir-{{ exercicio.id }}" 
+        data-id="{{ exercicio.id }}"
+        onclick="concluirExercicio(this)">
+        {% if exercicio.concluido %}Desmarcar{% else %}Concluir{% endif %}
+    </button>
 
-    <!-- Menu dropdown -->
     <div class="dropdown">
         <button type="button" onclick="toggleDropdown('menu-{{ exercicio.id }}')">⋮</button>
-        <div id="menu-{{ exercicio.id }}" style="display:none; position:absolute; background:#444; z-index:10; border-radius:4px; min-width:150px;">
-        
-            <!-- Editar -->
-            <div style="padding: 10px;">
-                <input type="text" id="nome-{{ exercicio.id }}" value="{{ exercicio.nome }}" style="width:100%; margin-bottom:4px;">
-                <input type="number" id="series-{{ exercicio.id }}" value="{{ exercicio.series }}" placeholder="Séries" style="width:100%; margin-bottom:4px;">
-                <input type="number" id="repeticoes-{{ exercicio.id }}" value="{{ exercicio.repeticoes }}" placeholder="Reps" style="width:100%; margin-bottom:4px;">
-                <input type="number" id="carga-{{ exercicio.id }}" value="{{ exercicio.carga }}" placeholder="Carga" step="0.5" style="width:100%; margin-bottom:8px;">
-                <button type="button" onclick="salvarEdicao(this)" data-id="{{ exercicio.id }}" style="width:100%;">Salvar</button>
-            </div>
-
-            <!-- Excluir -->
+        <div id="menu-{{ exercicio.id }}" style="display:none; position:absolute; right:0; background:#1a1a1a; border:1px solid #333; border-radius:10px; padding:12px; min-width:180px; z-index:10;">
+            <input type="text" id="nome-{{ exercicio.id }}" value="{{ exercicio.nome }}" style="margin-bottom:6px;">
+            <input type="number" id="series-{{ exercicio.id }}" value="{{ exercicio.series }}" placeholder="Séries" style="margin-bottom:6px;">
+            <input type="number" id="repeticoes-{{ exercicio.id }}" value="{{ exercicio.repeticoes }}" placeholder="Reps" style="margin-bottom:6px;">
+            <input type="number" id="carga-{{ exercicio.id }}" value="{{ exercicio.carga }}" placeholder="Carga" step="0.5" style="margin-bottom:10px;">
+            <button type="button" onclick="salvarEdicao(this)" data-id="{{ exercicio.id }}" style="width:100%; margin-bottom:6px;">Salvar</button>
             <form action="/exercicio/{{ exercicio.id }}/delete" method="post">
-                <button type="submit" style="width:100%; background:red; color:white; border:none; padding:8px; cursor:pointer;">Excluir</button>
+                <button type="submit" style="width:100%; background:#1e1e1e; border-color:#e57373; color:#e57373;">Excluir</button>
             </form>
         </div>
     </div>
+
 </div>
 {% endfor %}
 </div>
-<br>
 
-<h3>Progresso do treino</h3>
-<div class="progress" style="height: 18px; background-color: #ddd;">
-  <div class="progress-bar"
-       style="width: {{ progresso }}%; height: 100%; background-color: #4CAF50; color: white; text-align: center; font-weight: bold;">
-    {{ progresso }}%
-  </div>
+<h3 style="margin-top: 24px;">Progresso do treino</h3>
+<div class="progress">
+    <div class="progress-bar" style="width: {{ progresso }}%;">{{ progresso }}%</div>
 </div>
 
 {% if progresso == 100 %}
-<p style="color: black; font-weight: bold; margin-top: 10px;">
-  Parabéns! O seu treino foi finalizado! 🎉
-</p>
+<p style="color: #4CAF50; font-weight: bold; margin-top: 10px;">Parabéns! O seu treino foi finalizado! 🎉</p>
 {% endif %}
 
-<h3>Notas do treino</h3>
-<form action="/treino/{{ treino.id }}/notas" method="post">
-    <textarea name="notas" rows="4" cols="50" placeholder="Anotações sobre o treino...">{{ treino.notas }}</textarea>
-    <br>
+<h3 style="margin-top: 24px;">Notas do treino</h3>
+<form action="/treino/{{ treino.id }}/notas" method="post" style="max-width: 500px;">
+    <textarea name="notas" placeholder="Anotações sobre o treino...">{{ treino.notas }}</textarea>
     <button type="submit">Salvar notas</button>
 </form>
 
 {% with messages = get_flashed_messages() %}
     {% if messages %}
         {% for message in messages %}
-            <p style="color: green;">{{ message }}</p>
+            <p class="msg-sucesso">{{ message }}</p>
         {% endfor %}
     {% endif %}
 {% endwith %}
 
-<br><br>
-<a href="/" style="text-decoration:none;">
-    <button>Voltar</button>
-</a>
-<form action="/treino/{{ treino.id }}/encerrar" method="post" style="margin-top: 15px;">
-    <button type="submit" style="background-color: #4CAF50; color: white;">
-        Encerrar treino
-    </button>
-</form>
+<div style="display: flex; gap: 12px; margin-top: 24px; align-items: center;">
+    <a href="/" style="text-decoration:none;"><button>Voltar</button></a>
+    <form action="/treino/{{ treino.id }}/encerrar" method="post">
+        <button type="submit" style="background-color: #4CAF50; color: #0f0f0f; border: none; font-weight: 600;">Encerrar treino</button>
+    </form>
+</div>
 
 <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
 <script>
@@ -110,7 +90,6 @@ Dia: {{ treino.dia_semana }}
                 id: parseInt(el.getAttribute('data-id')),
                 ordem: index
             }));
-
             fetch('/treino/{{ treino.id }}/reordenar', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -118,46 +97,76 @@ Dia: {{ treino.dia_semana }}
             });
         }
     });
-</script>
 
-<script>
-function toggleDropdown(id) {
-    const menu = document.getElementById(id);
-    document.querySelectorAll('[id^="menu-"]').forEach(m => {
-        if (m.id !== id) m.style.display = 'none';
-    });
-    menu.style.display = menu.style.display === 'block' ? 'none' : 'block';
-}
+    function toggleDropdown(id) {
+        const menu = document.getElementById(id);
+        document.querySelectorAll('[id^="menu-"]').forEach(m => {
+            if (m.id !== id) m.style.display = 'none';
+        });
+        menu.style.display = menu.style.display === 'block' ? 'none' : 'block';
+    }
 
-function salvarEdicao(btn) {
+    function salvarEdicao(btn) {
+        const id = btn.getAttribute('data-id');
+        const form = document.createElement('form');
+        form.method = 'POST';
+        form.action = '/exercicio/' + id + '/editar';
+        const campos = {
+            nome: document.getElementById('nome-' + id).value,
+            series: document.getElementById('series-' + id).value,
+            repeticoes: document.getElementById('repeticoes-' + id).value,
+            carga: document.getElementById('carga-' + id).value
+        };
+        for (const [key, value] of Object.entries(campos)) {
+            const input = document.createElement('input');
+            input.type = 'hidden';
+            input.name = key;
+            input.value = value;
+            form.appendChild(input);
+        }
+        document.body.appendChild(form);
+        form.submit();
+    }
+
+    window.onclick = function(event) {
+        if (!event.target.matches('[onclick^="toggleDropdown"]')) {
+            document.querySelectorAll('[id^="menu-"]').forEach(m => m.style.display = 'none');
+        }
+    }
+
+    function concluirExercicio(btn) {
     const id = btn.getAttribute('data-id');
-    const form = document.createElement('form');
-    form.method = 'POST';
-    form.action = '/exercicio/' + id + '/editar';
 
-    const campos = {
-        nome: document.getElementById('nome-' + id).value,
-        series: document.getElementById('series-' + id).value,
-        repeticoes: document.getElementById('repeticoes-' + id).value,
-        carga: document.getElementById('carga-' + id).value
-    };
+    fetch('/exercicio/' + id + '/concluir', {
+        method: 'POST',
+        headers: { 'X-Requested-With': 'XMLHttpRequest' }
+    })
+    .then(r => r.json())
+    .then(data => {
+        document.getElementById('icone-' + id).textContent = data.concluido ? '✔' : '❌';
+        btn.textContent = data.concluido ? 'Desmarcar' : 'Concluir';
 
-    for (const [key, value] of Object.entries(campos)) {
-        const input = document.createElement('input');
-        input.type = 'hidden';
-        input.name = key;
-        input.value = value;
-        form.appendChild(input);
-    }
+        const barra = document.querySelector('.progress-bar');
+        if (barra) {
+            barra.style.width = data.progresso + '%';
+            barra.textContent = data.progresso + '%';
+        }
 
-    document.body.appendChild(form);
-    form.submit();
-}
-
-window.onclick = function(event) {
-    if (!event.target.matches('[onclick^="toggleDropdown"]')) {
-        document.querySelectorAll('[id^="menu-"]').forEach(m => m.style.display = 'none');
-    }
+        const msg = document.querySelector('.msg-sucesso-treino');
+        if (data.progresso === 100) {
+            if (!msg) {
+                const p = document.createElement('p');
+                p.className = 'msg-sucesso-treino';
+                p.style.color = '#4CAF50';
+                p.style.fontWeight = 'bold';
+                p.style.marginTop = '10px';
+                p.textContent = 'Parabéns! O seu treino foi finalizado! 🎉';
+                document.querySelector('.progress').insertAdjacentElement('afterend', p);
+            }
+        } else if (msg) {
+            msg.remove();
+        }
+    });
 }
 </script>
 

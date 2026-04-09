@@ -2,33 +2,30 @@
 
 {% block content %}
 
-<p>MONTE A SUA ROTINA DE TREINOS.</p>
+<p style="color: #888; margin-bottom: 24px;">MONTE A SUA ROTINA DE TREINOS.</p>
 
 <h2>Cadastrar Treino</h2>
 
-<form action="/treino" method="post">
-    <input type="text" name="dia_semana" placeholder="Dia da semana"><br>
+<form action="/treino" method="post" style="max-width: 400px;">
+    <input type="text" name="dia_semana" placeholder="Dia da semana">
     <input type="text" name="nome_treino" placeholder="Nome do treino">
     <button type="submit">Cadastrar</button>
 </form>
 
-<h2>Treinos</h2>
+<h2 style="margin-top: 32px;">Meus Treinos</h2>
 
 {% for treino in treinos %}
-<div style="display: flex; align-items: center; gap: 5px;">
-    <a href="/treino/{{ treino.id }}">
-        {{ treino.dia_semana }} - {{ treino.nome }}
-    </a>
-
+<div class="treino-item">
+    <a href="/treino/{{ treino.id }}">{{ treino.dia_semana }} — {{ treino.nome }}</a>
     <a href="/treino/{{ treino.id }}/editar">
-    <button>Editar</button>
+        <button>Editar</button>
     </a>
-
     <form action="/treino/{{ treino.id }}/delete" method="post">
-    <button type="submit">Excluir treino</button>
-</form>
-
+        <button type="button" onclick="this.closest('form').submit()" style="background:#1e1e1e; border-color:#e57373; color:#e57373;">Excluir</button>
+    </form>
 </div>
+{% else %}
+<p style="color: #555;">Nenhum treino cadastrado ainda.</p>
 {% endfor %}
 
 {% endblock %}

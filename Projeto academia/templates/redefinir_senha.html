@@ -1,19 +1,36 @@
-<h2>Redefinir Senha</h2>
+<!DOCTYPE html>
+<html>
+<head>
+    <title>DEVGYM</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
 
-{% if erro %}
-    <p style="color:red;">{{ erro }}</p>
-{% endif %}
+<div class="login-container">
+    <h1>DEVGYM</h1>
+    <h2 style="font-size: 1.2rem; margin-bottom: 20px;">Redefinir Senha</h2>
 
-{% if sucesso %}
-    <p style="color:green;">Senha alterada com sucesso! Agora você pode <a href="/login">fazer login</a>.</p>
-{% else %}
-    <form method="POST">
-        <label for="senha">Nova senha:</label>
-        <input type="password" name="senha" required><br><br>
+    {% if erro %}
+        <p class="msg-erro">{{ erro }}</p>
+    {% endif %}
 
-        <label for="senha_confirm">Confirme a senha:</label>
-        <input type="password" name="senha_confirm" required><br><br>
+    {% if sucesso %}
+        <p class="msg-sucesso">Senha alterada com sucesso!</p>
+        <p style="color: #aaa; font-size: 14px;">Agora você pode <a href="/login">fazer login</a>.</p>
+    {% else %}
+        <form method="POST">
+            <label>Nova senha:</label>
+            <input type="password" name="senha" required>
 
-        <button type="submit">Redefinir senha</button>
-    </form>
-{% endif %}
+            <label style="margin-top: 12px;">Confirme a senha:</label>
+            <input type="password" name="senha_confirm" required>
+
+            <button type="submit" style="margin-top: 8px;">Redefinir senha</button>
+        </form>
+    {% endif %}
+</div>
+
+</body>
+</html>

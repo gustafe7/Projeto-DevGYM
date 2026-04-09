@@ -1,57 +1,42 @@
 {% extends 'base.html' %}
 
 {% block content %}
-<h2>👤 Meu Perfil</h2>
+<h2>Meu Perfil</h2>
 
-<div style="display: flex; gap: 30px; flex-wrap: wrap;">
+<div class="perfil-grid">
 
-    <!-- 🧑 Informações -->
-    <div style="border: 1px solid #ccc; padding: 20px; border-radius: 8px; min-width: 300px;">
+    <div class="perfil-card">
         <h3>Informações</h3>
 
-        <strong>Nome:</strong>
+        <strong style="color: #aaa; font-size: 14px;">Nome:</strong>
         <form action="/perfil/editar-nome" method="post" style="display:inline;">
-            <span id="nome-texto">{{ usuario.nome }}</span>
-
-            <input type="text" id="nome-input" name="nome" value="{{ usuario.nome }}" 
-                style="display:none;" required>
-
+            <span id="nome-texto" style="color: #f0f0f0;">{{ usuario.nome }}</span>
+            <input type="text" id="nome-input" name="nome" value="{{ usuario.nome }}" style="display:none; width: 180px;">
             <button type="button" id="btn-editar" onclick="editarNome()">✏️</button>
             <button type="submit" id="btn-salvar" style="display:none;">Salvar</button>
         </form>
 
-        <p><strong>Email:</strong> {{ usuario.email }}</p>
-        <p><strong>Conta confirmada:</strong> {{ 'Sim' if usuario.confirmado else 'Não' }}</p>
+        <p style="margin-top: 12px;"><strong style="color: #aaa;">Email:</strong> <span style="color: #f0f0f0;">{{ usuario.email }}</span></p>
+        <p><strong style="color: #aaa;">Conta confirmada:</strong> <span style="color: {% if usuario.confirmado %}#4CAF50{% else %}#e57373{% endif %};">{{ 'Sim' if usuario.confirmado else 'Não' }}</span></p>
     </div>
 
-    <!-- 🔥 Resumo -->
-    <div style="border: 1px solid #ccc; padding: 20px; border-radius: 8px; min-width: 200px; text-align: center;">
+    <div class="perfil-card" style="text-align: center;">
         <h3>🔥 Sequência Atual</h3>
-        <h1>{{ streak }} dias</h1>
-
-        <p>
-            {% if streak == 1 %}
-                1 dia consecutivo
-            {% else %}
-                {{ streak }} dias consecutivos
-            {% endif %}
-        </p>
+        <h1 style="color: #FF9800; font-size: 3rem;">{{ streak }}</h1>
+        <p>{{ 'dia consecutivo' if streak == 1 else 'dias consecutivos' }}</p>
     </div>
 
-    <!-- 🏆 Recorde -->
-    <div style="border: 1px solid #ccc; padding: 20px; border-radius: 8px; min-width: 200px; text-align: center;">
+    <div class="perfil-card" style="text-align: center;">
         <h3>🏆 Recorde</h3>
-        <h1>{{ streak_max }} dias</h1>
+        <h1 style="color: #4CAF50; font-size: 3rem;">{{ streak_max }}</h1>
         <p>seu melhor desempenho</p>
     </div>
 
 </div>
 
-<br>
-<a href="/">
-    <button>Voltar</button>
-</a>
-</br>
+<div style="margin-top: 24px;">
+    <a href="/"><button>Voltar</button></a>
+</div>
 
 <script>
 function editarNome() {
@@ -61,5 +46,4 @@ function editarNome() {
     document.getElementById('btn-salvar').style.display = 'inline';
 }
 </script>
-
 {% endblock %}

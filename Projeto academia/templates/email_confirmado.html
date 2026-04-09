@@ -1,5 +1,21 @@
-<h2>E-mail confirmado com sucesso!</h2>
+<!DOCTYPE html>
+<html>
+<head>
+    <title>DEVGYM</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
 
-<a href="{{ url_for('login') }}">
-    <button>Ir para login</button>
-</a>
+<div class="login-container" style="text-align: center;">
+    <h1>DEVGYM</h1>
+    <h2 style="color: #4CAF50; margin-bottom: 16px;">E-mail confirmado com sucesso!</h2>
+    <p style="margin-bottom: 24px;">Sua conta está ativa. Faça login para começar.</p>
+    <a href="{{ url_for('login') }}">
+        <button type="button">Ir para login</button>
+    </a>
+</div>
+
+</body>
+</html>

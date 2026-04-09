@@ -4,46 +4,32 @@
 
 <h2>Meu Desempenho</h2>
 
-<div style="display: flex; gap: 20px; flex-wrap: wrap; margin-bottom: 30px;">
-
-    <div style="border: 1px solid #ccc; padding: 20px; border-radius: 8px; text-align: center; min-width: 160px;">
-        <h1 style="margin: 0; color: #4CAF50;">{{ treinos_completos }}/{{ total_sessoes }}</h1>
-        <p style="margin: 4px 0;">Treinos completos</p>
-        <span style="font-size: 1.2em; font-weight: bold; color: #4CAF50;">{{ pct_treinos }}%</span>
+<div class="stats-grid">
+    <div class="stat-card">
+        <h1 style="color: #4CAF50;">{{ treinos_completos }}/{{ total_sessoes }}</h1>
+        <p>Treinos completos</p>
+        <span style="color: #4CAF50; font-weight: bold;">{{ pct_treinos }}%</span>
     </div>
-
-    <div style="border: 1px solid #ccc; padding: 20px; border-radius: 8px; text-align: center; min-width: 160px;">
-        <h1 style="margin: 0; color: #2196F3;">{{ total_exercicios_feitos }}/{{ total_exercicios_possiveis }}</h1>
-        <p style="margin: 4px 0;">Exercícios concluídos</p>
-        <span style="font-size: 1.2em; font-weight: bold; color: #2196F3;">{{ pct_exercicios }}%</span>
+    <div class="stat-card">
+        <h1 style="color: #2196F3;">{{ total_exercicios_feitos }}/{{ total_exercicios_possiveis }}</h1>
+        <p>Exercícios concluídos</p>
+        <span style="color: #2196F3; font-weight: bold;">{{ pct_exercicios }}%</span>
     </div>
-
-    <div style="border: 1px solid #ccc; padding: 20px; border-radius: 8px; text-align: center; min-width: 160px;">
-        <h1 style="margin: 0; color: #FF9800;">{{ total_sessoes }}</h1>
-        <p style="margin: 4px 0;">Total de treinos</p>
+    <div class="stat-card">
+        <h1 style="color: #FF9800;">{{ total_sessoes }}</h1>
+        <p>Total de treinos</p>
     </div>
-
+    <div class="stat-card">
+        <h1 style="color: #FF9800;">{{ streak }}</h1>
+        <p>🔥 Sequência atual</p>
+    </div>
+    <div class="stat-card">
+        <h1 style="color: #4CAF50;">{{ streak_max }}</h1>
+        <p>🏆 Recorde de sequência</p>
+    </div>
 </div>
 
-<div style="border: 1px solid #ccc; padding: 20px; border-radius: 8px; text-align: center; min-width: 160px;">
-    <h3>🔥 Sequência Atual</h3>
-    <h1>{{ streak }} dias</h1>
-    <p>
-        {% if streak == 1 %}
-            1 dia consecutivo treinado
-        {% else %}
-            {{ streak }} dias consecutivos treinados
-        {% endif %}
-    </p>
-</div>
-
-<div style="border: 1px solid #ccc; padding: 20px; border-radius: 8px; text-align: center; min-width: 160px;">
-    <h3>🏆 Recorde de Sequência</h3>
-    <h1>{{ streak_max }} dias</h1>
-    <p>seu melhor desempenho</p>
-</div>
-
-<h3>Frequência Mensal</h3>
+<h3 style="margin-top: 32px;">Frequência Mensal</h3>
 <canvas id="grafico" width="500" height="250"></canvas>
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -52,27 +38,22 @@
 </script>
 <script>
     var dados = JSON.parse(document.getElementById('dados').textContent);
-    var labels = dados.labels;
-    var valores = dados.valores;
-
     const ctx = document.getElementById('grafico').getContext('2d');
     new Chart(ctx, {
         type: 'bar',
         data: {
-            labels: labels,
+            labels: dados.labels,
             datasets: [{
                 label: 'Treinos realizados',
-                data: valores,
+                data: dados.valores,
                 backgroundColor: '#4CAF50',
                 borderRadius: 6
             }]
         },
         options: {
             scales: {
-                y: {
-                    beginAtZero: true,
-                    ticks: { stepSize: 1 }
-                }
+                y: { beginAtZero: true, ticks: { stepSize: 1, color: '#888' }, grid: { color: '#2a2a2a' } },
+                x: { ticks: { color: '#888' }, grid: { color: '#2a2a2a' } }
             },
             plugins: {
                 legend: { display: false },
@@ -89,10 +70,10 @@
     });
 </script>
 
-<h3>Evolução de Carga</h3>
+<h3 style="margin-top: 32px;">Evolução de Carga</h3>
 
 {% if exercicios_nomes %}
-<form method="get">
+<form method="get" style="max-width: 300px;">
     <label>Selecione o exercício:</label>
     <select name="exercicio" onchange="this.form.submit()">
         {% for ex in exercicios_nomes %}
@@ -100,8 +81,6 @@
         {% endfor %}
     </select>
 </form>
-
-<br>
 
 <canvas id="graficoCarga" width="500" height="250"></canvas>
 
@@ -126,7 +105,8 @@
         },
         options: {
             scales: {
-                y: { beginAtZero: true }
+                y: { beginAtZero: true, ticks: { color: '#888' }, grid: { color: '#2a2a2a' } },
+                x: { ticks: { color: '#888' }, grid: { color: '#2a2a2a' } }
             }
         }
     });
@@ -137,109 +117,107 @@
 {% endif %}
 
 {% if treinos_inativos.total > 0 %}
-    <h3>Histórico de Treinos</h3>
-
+    <h3 style="margin-top: 32px;">Histórico de Treinos</h3>
     <ul id="lista-treinos">
     {% for treino in treinos_inativos.items %}
     <li>
         <strong>{{ treino.nome }}</strong> — {{ treino.dia_semana }}
-        <span style="color: #888; font-size: 0.9em;">
-            ({{ treino.data_criacao.strftime('%d/%m/%Y') }})
-        </span>
-
-        <form action="/treino/{{ treino.id }}/restaurar" method="post" style="display:inline;">
-            <button type="submit">Restaurar</button>
-        </form>
-
-        <button class="btn-excluir" data-id="{{ treino.id }}" style="background-color:red; color:white;">
-            Excluir treino
-        </button>
+        <span style="color: #555; font-size: 0.9em;">({{ treino.data_criacao.strftime('%d/%m/%Y') }})</span>
+        <button class="btn-restaurar" data-id="{{ treino.id }}">Restaurar</button>>
+        <button class="btn-excluir" data-id="{{ treino.id }}" style="border-color:#e57373; color:#e57373;">Excluir</button>
     </li>
     {% endfor %}
-</ul>
+    </ul>
 
-<!-- Paginação -->
-<div id="paginacao"style="display: flex; gap: 8px; align-items: center; margin-top: 10px;">
-    {% if treinos_inativos.has_prev %}
-        <a href="{{ url_for('desempenho', pagina=treinos_inativos.prev_num) }}">
-            <button>← Anterior</button>
-        </a>
-    {% endif %}
-
-    {% for p in treinos_inativos.iter_pages(left_edge=1, right_edge=1, left_current=2, right_current=2) %}
-        {% if p %}
-            {% if p == treinos_inativos.page %}
-                <button disabled style="font-weight: bold;">{{ p }}</button>
-            {% else %}
-                <a href="{{ url_for('desempenho', pagina=p) }}">
-                    <button>{{ p }}</button>
-                </a>
-            {% endif %}
-        {% else %}
-            <span>…</span>
+    <div id="paginacao">
+        {% if treinos_inativos.has_prev %}
+            <a href="{{ url_for('desempenho', pagina=treinos_inativos.prev_num) }}"><button>← Anterior</button></a>
         {% endif %}
-    {% endfor %}
+        {% for p in treinos_inativos.iter_pages(left_edge=1, right_edge=1, left_current=2, right_current=2) %}
+            {% if p %}
+                {% if p == treinos_inativos.page %}
+                    <button disabled>{{ p }}</button>
+                {% else %}
+                    <a href="{{ url_for('desempenho', pagina=p) }}"><button>{{ p }}</button></a>
+                {% endif %}
+            {% else %}
+                <span style="color:#555;">…</span>
+            {% endif %}
+        {% endfor %}
+        {% if treinos_inativos.has_next %}
+            <a href="{{ url_for('desempenho', pagina=treinos_inativos.next_num) }}"><button>Próxima →</button></a>
+        {% endif %}
+    </div>
 
-    {% if treinos_inativos.has_next %}
-        <a href="{{ url_for('desempenho', pagina=treinos_inativos.next_num) }}">
-            <button>Próxima →</button>
-        </a>
-    {% endif %}
-</div>
-
-<p id="contador"style="color: #888; font-size: 0.9em;">
-    Mostrando {{ treinos_inativos.items | length }} de {{ treinos_inativos.total }} treinos
-</p>
+    <p id="contador" style="color: #555; font-size: 0.9em; margin-top: 8px;">
+        Mostrando {{ treinos_inativos.items | length }} de {{ treinos_inativos.total }} treinos
+    </p>
 
 {% else %}
-    <h3>Histórico de Treinos</h3>
+    <h3 style="margin-top: 32px;">Histórico de Treinos</h3>
     <p>Nenhum treino no histórico.</p>
 {% endif %}
 
-<br>
-<a href="/" style="text-decoration:none;">
-    <button>Voltar</button>
-</a>
+<div style="margin-top: 24px;">
+    <a href="/"><button>Voltar</button></a>
+</div>
 
 <script>
 document.querySelectorAll('.btn-excluir').forEach(function(btn) {
     btn.addEventListener('click', function() {
         var id = this.getAttribute('data-id');
-
         fetch('/treino/' + id + '/delete-permanente', {
             method: 'POST',
             headers: { 'X-Requested-With': 'XMLHttpRequest' }
-        })
-        .then(function(response) {
+        }).then(function(response) {
             if (response.ok) {
-
-                
                 const li = btn.closest('li');
+                li.remove();
+                const lista = document.getElementById('lista-treinos');
+                const titulo = lista.previousElementSibling;
+                const itens = lista.querySelectorAll('li').length;
+                if (itens === 0) {
+                    lista.remove();
+                    document.getElementById('paginacao')?.remove();
+                    document.getElementById('contador')?.remove();
+                    const msg = document.createElement('p');
+                    msg.textContent = 'Nenhum treino no histórico.';
+                    titulo.insertAdjacentElement('afterend', msg);
+                } else {
+                    const contador = document.getElementById('contador');
+                    if (contador) contador.textContent = `Mostrando ${itens} de ${itens} treinos`;
+                }
+            }
+        });
+    });
+});
+
+document.querySelectorAll('.btn-restaurar').forEach(function(btn) {
+    btn.addEventListener('click', function() {
+        var id = this.getAttribute('data-id');
+        var li = this.closest('li');
+
+        fetch('/treino/' + id + '/restaurar', {
+            method: 'POST',
+            headers: { 'X-Requested-With': 'XMLHttpRequest' }
+        }).then(function(response) {
+            if (response.ok) {
                 li.remove();
 
                 const lista = document.getElementById('lista-treinos');
                 const titulo = lista.previousElementSibling;
                 const itens = lista.querySelectorAll('li').length;
-                
-                
+
                 if (itens === 0) {
-
                     lista.remove();
-
                     document.getElementById('paginacao')?.remove();
                     document.getElementById('contador')?.remove();
-
                     const msg = document.createElement('p');
                     msg.textContent = 'Nenhum treino no histórico.';
-
                     titulo.insertAdjacentElement('afterend', msg);
-
                 } else {
-                    
                     const contador = document.getElementById('contador');
-                    if (contador) {
-                        contador.textContent = `Mostrando ${itens} de ${itens} treinos`;
-                    }
+                    if (contador) contador.textContent = `Mostrando ${itens} de ${itens} treinos`;
                 }
             }
         });
