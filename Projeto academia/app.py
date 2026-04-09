@@ -23,9 +23,6 @@ app.config['MAIL_USERNAME'] = os.getenv('MAIL_USERNAME')
 app.config['MAIL_PASSWORD'] = os.getenv('MAIL_PASSWORD')
 mail = Mail(app)
 
-with app.app_context():
-    db.create_all()
-
 def email_valido(email):
     padrao = r'^[\w\.-]+@[\w\.-]+\.\w+$'
     return re.match(padrao, email)
@@ -136,6 +133,9 @@ class HistoricoCarga(db.Model):
     exercicio_nome = db.Column(db.String(100), nullable=False)
     carga = db.Column(db.Float, nullable=False)
     data = db.Column(db.Date, nullable=False)
+
+with app.app_context():
+    db.create_all()
 
 @app.route('/')
 def index():
