@@ -12,7 +12,10 @@ load_dotenv()
 
 app = Flask(__name__)
 app.secret_key = 'sua_chave_secreta_aqui'
-app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('DATABASE_URL', 'sqlite:///database.db')
+database_url = os.environ.get('DATABASE_URL', 'sqlite:///database.db')
+if database_url.startswith('postgres://'):
+    database_url = database_url.replace('postgres://', 'postgresql://', 1)
+app.config['SQLALCHEMY_DATABASE_URI'] = database_url
 db = SQLAlchemy(app)
 serializer = URLSafeTimedSerializer(app.secret_key)
 
