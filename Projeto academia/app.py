@@ -137,6 +137,10 @@ class HistoricoCarga(db.Model):
 with app.app_context():
     db.create_all()
 
+@app.route('/favicon.ico')
+def favicon():
+    return app.send_static_file('favicon.ico')
+
 @app.route('/')
 def index():
     if 'usuario_id' not in session:
