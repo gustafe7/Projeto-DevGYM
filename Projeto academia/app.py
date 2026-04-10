@@ -223,8 +223,10 @@ def confirmar_email(token):
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     erro = None
+    email_digitado = None
     if request.method == 'POST':
         email = request.form['email']
+        email_digitado = email
         senha = request.form['senha']
         usuario = Usuario.query.filter_by(email=email).first()
         if usuario:
@@ -236,8 +238,35 @@ def login():
             else:
                 erro = "E-mail ou senha incorretos!"
         else:
-            erro = "E-mail ou senha incorretos!"  
-    return render_template('login.html', erro=erro)
+            erro = "E-mail ou senha incorretos!"
+    return render_template('login.html', erro=erro, email_digitado=email_digitado)
+
+@app.route('/reenviar-confirmacao', methods=['POST'])
+def reenviar_confirmacao():
+    email = request.form.get('email')
+    usuario = Usuario.query.filter_by(email=email).first()
+
+    if usuario and not usuario.confirmado:
+        token = serializer.dumps(email, salt='confirmar-email')
+        link = url_for('confirmar_email', token=token, _external=True)
+        msg = Message(subject="🏋️ Confirme seu cadastro - DevGym",
+                      sender=app.config['MAIL_USERNAME'],
+                      recipients=[email],
+                      body=f"""Fala, {usuario.nome}! 👋
+
+Você solicitou um novo link de confirmação. Clique abaixo para confirmar seu e-mail:
+
+👉 {link}
+
+O link é válido por 1 hora.
+
+⚠️ Este é um e-mail automático, por favor não responda.
+
+Bora treinar! 💪
+— Equipe DevGym""")
+        mail.send(msg)
+
+    return redirect(url_for('login'))
 
 @app.route('/perfil')
 def perfil():

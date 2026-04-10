@@ -32,6 +32,12 @@
 
     {% if erro %}
         <p class="msg-erro">{{ erro }}</p>
+        {% if 'confirme seu e-mail' in erro %}
+        <form action="/reenviar-confirmacao" method="post">
+            <input type="hidden" name="email" value="{{ email_digitado }}">
+            <button type="submit">Reenviar e-mail de confirmação</button>
+        </form>
+        {% endif %}
     {% endif %}
 
     {% if sucesso %}
