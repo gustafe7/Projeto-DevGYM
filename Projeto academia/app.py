@@ -182,18 +182,18 @@ def cadastro():
               recipients=[email],
               body=f"""Fala, {nome}! 
 
-            Que bom ter você por aqui!
+Que bom ter você por aqui!
 
-            Só falta um passo para começar a montar sua rotina de treinos no DevGym. Confirme seu e-mail clicando no link abaixo:
+Só falta um passo para começar a montar sua rotina de treinos no DevGym. Confirme seu e-mail clicando no link abaixo:
 
-            👉 {link}
+👉 {link}
 
-            O link é válido por 1 hora.
+O link é válido por 1 hora.
 
-            ⚠️ Este é um e-mail automático, por favor não responda.
+⚠️ Este é um e-mail automático, por favor não responda.
 
-            Bora treinar! 💪
-            — Equipe DevGym""")
+Bora treinar! 💪
+— Equipe DevGym""")
             mail.send(msg)
             sucesso = True
     return render_template('login.html', erro=erro, sucesso=sucesso)
@@ -346,17 +346,17 @@ def enviar_recuperacao():
               recipients=[email],
               body=f"""Fala, {usuario.nome}! 
 
-    Recebemos uma solicitação para redefinir a senha da sua conta no DevGym.
+Recebemos uma solicitação para redefinir a senha da sua conta no DevGym.
 
-    Clique no link abaixo para criar uma nova senha:
+Clique no link abaixo para criar uma nova senha:
 
-    👉 {link}
+👉 {link}
 
-    O link é válido por 1 hora. Se você não solicitou a redefinição, pode ignorar este e-mail.
+O link é válido por 1 hora. Se você não solicitou a redefinição, pode ignorar este e-mail.
 
-    ⚠️ Este é um e-mail automático, por favor não responda.
+⚠️ Este é um e-mail automático, por favor não responda.
 
-    — Equipe DevGym""")
+— Equipe DevGym""")
         mail.send(msg)
 
     return "Se o e-mail estiver cadastrado, você receberá instruções para redefinir sua senha."
