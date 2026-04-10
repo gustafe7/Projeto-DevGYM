@@ -177,10 +177,23 @@ def cadastro():
             db.session.commit()
             token = serializer.dumps(email, salt='confirmar-email')
             link = url_for('confirmar_email', token=token, _external=True)
-            msg = Message(subject="Confirme seu cadastro", 
-                          sender=app.config['MAIL_USERNAME'], 
-                          recipients=[email],
-                          body=f"Olá {nome},\n\nPor favor, clique no link abaixo para confirmar seu cadastro: {link}")
+            msg = Message(subject="🏋️ Bem-vindo ao DevGym!",
+              sender=app.config['MAIL_USERNAME'],
+              recipients=[email],
+              body=f"""Fala, {nome}! 
+
+            Que bom ter você por aqui!
+
+            Só falta um passo para começar a montar sua rotina de treinos no DevGym. Confirme seu e-mail clicando no link abaixo:
+
+            👉 {link}
+
+            O link é válido por 1 hora.
+
+            ⚠️ Este é um e-mail automático, por favor não responda.
+
+            Bora treinar! 💪
+            — Equipe DevGym""")
             mail.send(msg)
             sucesso = True
     return render_template('login.html', erro=erro, sucesso=sucesso)
@@ -328,10 +341,22 @@ def enviar_recuperacao():
     if usuario:
         token = gerar_token(usuario.email)
         link = url_for('redefinir_senha', token=token, _external=True)
-        msg = Message(subject="Redefinir senha - DevGym", 
-                      sender=app.config['MAIL_USERNAME'], 
-                      recipients=[email],
-                      body=f"Olá {usuario.nome},\n\nClique no link abaixo para redefinir sua senha: {link}\n Link válido por 1 hora.")
+        msg = Message(subject="🔑 Redefinir senha - DevGym",
+              sender=app.config['MAIL_USERNAME'],
+              recipients=[email],
+              body=f"""Fala, {usuario.nome}! 
+
+        Recebemos uma solicitação para redefinir a senha da sua conta no DevGym.
+
+        Clique no link abaixo para criar uma nova senha:
+
+        👉 {link}
+
+        O link é válido por 1 hora. Se você não solicitou a redefinição, pode ignorar este e-mail.
+
+        ⚠️ Este é um e-mail automático, por favor não responda.
+
+        — Equipe DevGym""")
         mail.send(msg)
 
     return "Se o e-mail estiver cadastrado, você receberá instruções para redefinir sua senha."
