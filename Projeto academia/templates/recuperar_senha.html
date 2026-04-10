@@ -17,6 +17,10 @@
         <button type="submit">Enviar link de recuperação</button>
     </form>
 
+    {% if sucesso %}
+        <p class="msg-sucesso" style="margin-top: 16px;">Se o e-mail estiver cadastrado, você receberá as instruções em breve! 📬</p>
+    {% endif %}
+
     <div style="margin-top: 16px;">
         <a href="/login">Voltar para login</a>
     </div>

@@ -396,7 +396,7 @@ O link é válido por 1 hora. Se você não solicitou a redefinição, pode igno
 — Equipe DevGym""")
         mail.send(msg)
 
-    return "Se o e-mail estiver cadastrado, você receberá instruções para redefinir sua senha."
+    return render_template('recuperar_senha.html', sucesso=True)
 
 @app.route('/recuperar-senha')
 def recuperar_senha():
