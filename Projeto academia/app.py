@@ -346,17 +346,17 @@ def enviar_recuperacao():
               recipients=[email],
               body=f"""Fala, {usuario.nome}! 
 
-        Recebemos uma solicitação para redefinir a senha da sua conta no DevGym.
+    Recebemos uma solicitação para redefinir a senha da sua conta no DevGym.
 
-        Clique no link abaixo para criar uma nova senha:
+    Clique no link abaixo para criar uma nova senha:
 
-        👉 {link}
+    👉 {link}
 
-        O link é válido por 1 hora. Se você não solicitou a redefinição, pode ignorar este e-mail.
+    O link é válido por 1 hora. Se você não solicitou a redefinição, pode ignorar este e-mail.
 
-        ⚠️ Este é um e-mail automático, por favor não responda.
+    ⚠️ Este é um e-mail automático, por favor não responda.
 
-        — Equipe DevGym""")
+    — Equipe DevGym""")
         mail.send(msg)
 
     return "Se o e-mail estiver cadastrado, você receberá instruções para redefinir sua senha."
