@@ -26,6 +26,14 @@ app.config['MAIL_USERNAME'] = os.getenv('MAIL_USERNAME')
 app.config['MAIL_PASSWORD'] = os.getenv('MAIL_PASSWORD')
 mail = Mail(app)
 
+@app.errorhandler(404)
+def pagina_nao_encontrada(e):
+    return render_template('404.html'), 404
+
+@app.errorhandler(500)
+def erro_interno(e):
+    return render_template('500.html'), 500
+
 def email_valido(email):
     padrao = r'^[\w\.-]+@[\w\.-]+\.\w+$'
     return re.match(padrao, email)
