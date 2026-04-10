@@ -424,7 +424,7 @@ def redefinir_senha(token):
         else:
             usuario = Usuario.query.filter_by(email=email).first()
             if usuario:
-                usuario.senha = nova_senha
+                usuario.senha = generate_password_hash(nova_senha)
                 db.session.commit()
                 sucesso = True
             else:
